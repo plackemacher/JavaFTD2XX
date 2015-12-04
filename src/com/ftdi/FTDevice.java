@@ -24,8 +24,11 @@
 package com.ftdi;
 
 import com.sun.jna.Memory;
+import com.sun.jna.NativeLong;
 import com.sun.jna.ptr.ByteByReference;
 import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.NativeLongByReference;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -44,13 +47,13 @@ public class FTDevice {
     static private final FTD2XX ftd2xx = FTD2XX.INSTANCE;
     private final int devID, devLocationID, flag;
     private final DeviceType devType;
-    private int ftHandle;
+    private NativeLong ftHandle;
     private final String devSerialNumber, devDescription;
     private FTDeviceInputStream fTDeviceInputStream = null;
     private FTDeviceOutputStream fTDeviceOutputStream = null;
 
     private FTDevice(DeviceType devType, int devID, int devLocationID,
-            String devSerialNumber, String devDescription, int ftHandle,
+            String devSerialNumber, String devDescription, NativeLong ftHandle,
             int flag) {
         this.devType = devType;
         this.devID = devID;
@@ -124,7 +127,7 @@ public class FTDevice {
     @Override
     public int hashCode() {
         int hash = 5;
-        hash = 97 * hash + this.ftHandle;
+        hash = 97 * hash + this.ftHandle.intValue();
         return hash;
     }
 
@@ -145,7 +148,7 @@ public class FTDevice {
         IntByReference devType = new IntByReference();
         IntByReference devID = new IntByReference();
         IntByReference locID = new IntByReference();
-        IntByReference ftHandle = new IntByReference();
+        NativeLongByReference ftHandle = new NativeLongByReference();
         Memory devSerNum = new Memory(16);
         Memory devDesc = new Memory(64);
 
@@ -300,7 +303,7 @@ public class FTDevice {
     public void open() throws FTD2XXException {
         Memory memory = new Memory(16);
         memory.setString(0, devSerialNumber);
-        IntByReference handle = new IntByReference();
+        NativeLongByReference handle = new NativeLongByReference();
         ensureFTStatus(ftd2xx.FT_OpenEx(memory, FTD2XX.FT_OPEN_BY_SERIAL_NUMBER,
                 handle));
         this.ftHandle = handle.getValue();
